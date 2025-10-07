@@ -4,6 +4,7 @@ set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON_BIN_DEFAULT="python3"
+FUSION_MANIFEST_DEFAULT_URL="https://dl.fusion.getdbt.com/cli/manifest.json"
 
 log() {
   echo "asdf-dbt: $*" >&2
@@ -70,6 +71,7 @@ fusion_manifest_path() {
     return
   fi
 
+  ensure_default_fusion_manifest
   echo "$PLUGIN_ROOT/share/fusion-manifest.json"
 }
 
@@ -77,6 +79,50 @@ cleanup_temp_manifest() {
   local path="$1"
   if [[ -n "${ASDF_DBT_FUSION_MANIFEST_URL:-}" && -f "$path" ]]; then
     rm -f "$path"
+  fi
+}
+
+ensure_default_fusion_manifest() {
+  local manifest="$PLUGIN_ROOT/share/fusion-manifest.json"
+  local python_bin
+  python_bin="$(get_python_bin)"
+
+  if [[ -f "$manifest" ]]; then
+    if "$python_bin" - "$manifest" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    sys.exit(1)
+
+versions = data.get("versions")
+if isinstance(versions, dict) and versions:
+    sys.exit(0)
+
+sys.exit(1)
+PY
+    then
+      return
+    fi
+  fi
+
+  local bootstrap_url="${ASDF_DBT_FUSION_MANIFEST_BOOTSTRAP_URL:-$FUSION_MANIFEST_DEFAULT_URL}"
+  if [[ -z "$bootstrap_url" ]]; then
+    return
+  fi
+
+  local tmp
+  tmp="$(mktemp)"
+  if curl -fsSL "$bootstrap_url" -o "$tmp"; then
+    mkdir -p "$(dirname "$manifest")"
+    mv "$tmp" "$manifest"
+  else
+    rm -f "$tmp"
+    log "Failed to download default fusion manifest from $bootstrap_url"
   fi
 }
 

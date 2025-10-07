@@ -31,12 +31,13 @@ The plugin creates an isolated virtual environment inside the installation direc
 
 ## Installing dbt Fusion
 
-dbt Fusion builds are distributed as tarballs from a CDN. The plugin consumes a JSON manifest describing the available versions and per-platform assets. By default the manifest located at `share/fusion-manifest.json` is used, but you will typically want to keep it in sync with upstream releases.
+dbt Fusion builds are distributed as tarballs from a CDN. The plugin consumes a JSON manifest describing the available versions and per-platform assets. By default the plugin bootstraps the manifest by downloading `https://dl.fusion.getdbt.com/cli/manifest.json` into `share/fusion-manifest.json`, so `asdf list-all dbt` works out of the box when the CDN is reachable.
 
 You can customise where the manifest comes from:
 
 - `ASDF_DBT_FUSION_MANIFEST_URL` – HTTP(S) URL to download the manifest.
 - `ASDF_DBT_FUSION_MANIFEST_PATH` – local path to a manifest file (skips downloading).
+- `ASDF_DBT_FUSION_MANIFEST_BOOTSTRAP_URL` – override the CDN URL used to populate `share/fusion-manifest.json` when it is empty.
 
 Each manifest entry has the following shape:
 
