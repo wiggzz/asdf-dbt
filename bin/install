@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/utils.bash
+source "$SCRIPT_DIR/../lib/utils.bash"
+
+usage() {
+  cat <<USAGE
+Usage: asdf install dbt <version>
+
+Examples:
+  asdf install dbt 1.6.0       # installs dbt-core 1.6.0
+  asdf install dbt core-1.7.0  # installs dbt-core 1.7.0
+  asdf install dbt fusion-0.6.0
+USAGE
+}
+
+if [[ $# -lt 2 ]]; then
+  usage
+  exit 1
+fi
+
+action="$1"
+version="$2"
+install_dir="${ASDF_INSTALL_PATH:-}"
+
+if [[ -z "$install_dir" ]]; then
+  fail "ASDF_INSTALL_PATH is not set"
+fi
+
+case "$action" in
+  install)
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac
+
+if [[ -z "$version" ]]; then
+  usage
+  exit 1
+fi
+
+if [[ "$version" == fusion-* ]]; then
+  fusion_version="$(parse_fusion_version "$version")"
+  install_fusion_from_manifest "$install_dir" "$fusion_version"
+else
+  core_version="$(parse_core_version "$version")"
+  create_core_venv_and_install "$install_dir" "$core_version"
+fi
+

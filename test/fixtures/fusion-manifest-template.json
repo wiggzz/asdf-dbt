@@ -1,0 +1,11 @@
+{
+  "versions": {
+    "0.0.1-test": {
+      "linux-x86_64": {
+        "url": "__URL__",
+        "sha256": "__SHA__",
+        "bin": "dbt-fusion/dbt"
+      }
+    }
+  }
+}
