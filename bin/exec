@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -z "${ASDF_INSTALL_PATH:-}" ]]; then
+  echo "ASDF_INSTALL_PATH is not set" >&2
+  exit 1
+fi
+
+exec "$ASDF_INSTALL_PATH/bin/dbt" "$@"
