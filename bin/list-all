@@ -65,10 +65,6 @@ PY
 }
 
 main() {
-  if [[ "${1:-}" != "list-all" ]]; then
-    exit 1
-  fi
-
   local core_versions fusion_versions
   core_versions="$(fetch_core_versions || true)"
   fusion_versions="$(fetch_fusion_versions || true)"
